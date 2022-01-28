@@ -1,8 +1,8 @@
 import sys
 import glob
 import re
+import mutagen
 from pathlib import Path
-from mutagen.flac import FLAC
 
 def show_menu():
   print("")
@@ -49,7 +49,7 @@ def show_menu():
     sort_files()
     show_tracks()
   
-  elif ans == "2":
+  elif ans == "rename":
     rename_files()
     quit()
   
@@ -58,7 +58,7 @@ def show_menu():
 
 def rename_files():
   for file in files:
-    audio = FLAC(file)
+    audio = mutagen.File(file)
     title = re.sub(r'[^\w ]', "", audio["title"][0]).lower()
     title = title.replace(" ", "_")
     tracknum = audio["tracknumber"][0]
@@ -69,7 +69,7 @@ def rename_files():
 def show_tracks():
   print("")
   for i, file in enumerate(files):
-    audio = FLAC(file)
+    audio = mutagen.File(file)
     title = audio["title"][0]
     artist = audio["artist"][0]
     index = i + 1
@@ -77,7 +77,7 @@ def show_tracks():
 
 def check_tracks():
   for file in files:
-    audio = FLAC(file)
+    audio = mutagen.File(file)
     title = audio["title"][0]
     if "tracknumber" not in audio:
       audio["tracknumber"] = "1"
@@ -91,7 +91,7 @@ def check_tracks():
 
 def sort_files():
   for i, file in enumerate(files):
-    audio = FLAC(file)
+    audio = mutagen.File(file)
     tracknum = audio["tracknumber"][0]
     n = str(i + 1)
     if tracknum != n:
@@ -111,7 +111,7 @@ def changeall(field, value):
     changeone(i, field, value)
 
 def changeone(index, field, value):
-  audio = FLAC(files[index])
+  audio = mutagen.File(files[index])
   audio[field] = value
   update_track(audio)
 

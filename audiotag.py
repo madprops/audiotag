@@ -46,7 +46,7 @@ def show_menu():
       n2 = len(files)
 
     change_index(n1 - 1, n2 - 1)
-    sort_files()
+    update_tracknumbers()
     show_tracks()
   
   elif ans == "rename":
@@ -82,6 +82,7 @@ def check_tracks():
     if "tracknumber" not in audio:
       audio["tracknumber"] = "1"
       update_track(audio)
+      changeone("tracknumber")
     if "title" not in audio or audio["title"][0].strip() == "":
       audio["title"] = Path(file).stem.strip()
       update_track(audio)
@@ -89,7 +90,7 @@ def check_tracks():
       audio["artist"] = "Anon"
       update_track(audio)      
 
-def sort_files():
+def update_tracknumbers():
   for i, file in enumerate(files):
     audio = mutagen.File(file)
     tracknum = audio["tracknumber"][0]
@@ -115,10 +116,14 @@ def changeone(index, field, value):
   audio[field] = value
   update_track(audio)
 
+def initial_sort():
+  global files
+  files = sorted(files, key=lambda x: int(mutagen.File(x)["tracknumber"][0]))
+
 files = glob.glob(f"{sys.argv[1]}/*.flac")
 
 check_tracks()
-sort_files()
+initial_sort()
 
 while True:
   show_tracks()

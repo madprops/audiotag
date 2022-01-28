@@ -6,12 +6,33 @@ from mutagen.flac import FLAC
 
 def show_menu():
   print("")
+  print("title - Change a track's title")
+  print("artist - Change a track's artist")
+  print("artistall - Change the album's artist")
   print("move - Move track to a new position")
   print("rename - Apply filename changes")
 
   ans = input("> ")
 
-  if ans == "move":
+  if ans == "title":
+    n = int(input("Track Number: "))
+    t = input("New Track Title: ")
+    if n <= 0 or n > len(files):
+      return
+    changeone(n - 1, "title", t)  
+
+  elif ans == "artist":
+    n = int(input("Track Number: "))
+    a = input("New Track Artist: ")
+    if n <= 0 or n > len(files):
+      return
+    changeone(n - 1, "artist", a)
+
+  elif ans == "artistall":
+    a = input("New Artist Name: ")
+    changeall("artist", a)   
+
+  elif ans == "move":
     n1 = int(input("Track Number: "))
     n2 = int(input("New Track Number: "))
 
@@ -50,20 +71,23 @@ def show_tracks():
   for i, file in enumerate(files):
     audio = FLAC(file)
     title = audio["title"][0]
+    artist = audio["artist"][0]
     index = i + 1
-    print(f"Track: {index} | Title: {title}")
+    print(f"Track: {index} | Artist: {artist} | Title: {title}")
 
-def fill_tracknumbers():
+def check_tracks():
   for file in files:
     audio = FLAC(file)
     title = audio["title"][0]
     if "tracknumber" not in audio:
       audio["tracknumber"] = "1"
       update_track(audio)
-
-def initial_sort():
-  global files
-  files = sorted(files, key=lambda x: int(FLAC(x)["tracknumber"][0]))
+    if "title" not in audio or audio["title"][0].strip() == "":
+      audio["title"] = Path(file).stem.strip()
+      update_track(audio)
+    if "artist" not in audio or audio["artist"][0].strip() == "":
+      audio["artist"] = "Anon"
+      update_track(audio)      
 
 def sort_files():
   for i, file in enumerate(files):
@@ -82,10 +106,19 @@ def update_track(audio):
 def change_index(old_index, new_index):
   files.insert(new_index, files.pop(old_index))
 
+def changeall(field, value):
+  for i, file in enumerate(files):
+    changeone(i, field, value)
+
+def changeone(index, field, value):
+  audio = FLAC(files[index])
+  audio[field] = value
+  update_track(audio)
+
 files = glob.glob(f"{sys.argv[1]}/*.flac")
 
-fill_tracknumbers()
-initial_sort()
+check_tracks()
+sort_files()
 
 while True:
   show_tracks()

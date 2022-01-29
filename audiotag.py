@@ -1,9 +1,11 @@
 import sys
 import glob
 import re
-import mutagen
 import sty
 from pathlib import Path
+from mutagen.flac import FLAC
+from mutagen.oggvorbis import OggVorbis
+from mutagen.easyid3 import EasyID3
 
 # Show the full menu with descriptions
 def show_full_menu():
@@ -83,11 +85,11 @@ def change_value(prop):
 def rename_files():
   for file in files:
     p = Path(file)
-    audio = mutagen.File(file)
-    title = re.sub(r'[^\w ]', "", audio["title"][0]).lower()
+    audio = get_audio_object(file)
+    title = re.sub(r'[^\w ]', "", get_tag(audio, "title")).lower()
     title = title.replace(" ", "_")
-    tracknum = audio["tracknumber"][0]
-    new_name = f"{tracknum}_{title}.{p.suffix}"
+    tracknum = get_tag(audio, "tracknumber")
+    new_name = f"{tracknum}_{title}{p.suffix}"
     p.rename(Path(p.parent, new_name))
 
 # Show tracks to use as reference
@@ -96,11 +98,11 @@ def rename_files():
 def show_tracks():
   print("")
   for i, file in enumerate(files):
-    audio = mutagen.File(file)
-    artist = audio["artist"][0]
-    album = audio["album"][0]
-    genre = audio["genre"][0]
-    title = audio["title"][0]
+    audio = get_audio_object(file)
+    artist = get_tag(audio, "artist")
+    album = get_tag(audio, "album")
+    genre = get_tag(audio, "genre")
+    title = get_tag(audio, "title")
     index = i + 1
     
     print(f"{sty.fg.blue}Track:{sty.fg.rs} {index} | \
@@ -112,41 +114,32 @@ def show_tracks():
 # Fill missing data on Track, Artist, Album, Genre, and Title
 def check_tracks():
   for file in files:
-    audio = mutagen.File(file)
-    do_update_track = False
+    audio = get_audio_object(file)
+    set_tag_if_empty(audio, "tracknumber", "1")
+    set_tag_if_empty(audio, "artist", "Unknown")
+    set_tag_if_empty(audio, "album", "Unknown")
+    set_tag_if_empty(audio, "genre", "Unknown")
+    set_tag_if_empty(audio, "title", "Unknown")
 
-    if "tracknumber" not in audio:
-      audio["tracknumber"] = "1"
-      do_update_track = True
-    if "artist" not in audio or audio["artist"][0].strip() == "":
-      audio["artist"] = "Unknown"
-      do_update_track = True
-    if "album" not in audio or audio["album"][0].strip() == "":
-      audio["album"] = "Unknown"
-      do_update_track = True  
-    if "genre" not in audio or audio["genre"][0].strip() == "":
-      audio["genre"] = "Unknown"
-      do_update_track = True            
-    if "title" not in audio or audio["title"][0].strip() == "":
-      audio["title"] = Path(file).stem.strip()
-      do_update_track = True
-
-    if update_track:
-      update_track(audio)
+# If value is empty fill it with a value
+def set_tag_if_empty(audio, field, value):
+  if get_tag(audio, field) == "":
+    set_tag(audio, field, value)
+    update_track(audio)
 
 # Update track numbers based on the indexes of the files list
 def update_tracknumbers():
   for i, file in enumerate(files):
-    audio = mutagen.File(file)
-    tracknum = audio["tracknumber"][0]
+    audio = get_audio_object(file)
+    tracknum = get_tag(audio, "tracknumber")
     n = str(i + 1)
     if tracknum != n:
-      audio["tracknumber"] = n
+      set_tag(audio, "tracknumber", n)
       update_track(audio)
 
 # Save track data and show feedback
 def update_track(audio):
-  title = audio["title"][0]
+  title = get_tag(audio, "title")
   print(f"Updating track: {title}")
   audio.save()
 
@@ -161,21 +154,45 @@ def changeall(field, value):
 
 # Change a field on a specific track
 def changeone(index, field, value):
-  audio = mutagen.File(files[index])
-  audio[field] = value
+  file = files[index]
+  audio = get_audio_object(file)
+  set_tag(audio, field, value)
   update_track(audio)
 
-# Sort by tracknumber data
+# Get proper audio object
+def get_audio_object(file):
+  p = Path(file)
+  if p.suffix == ".mp3":
+    return EasyID3(file)
+  elif p.suffix == ".flac":
+    return FLAC(file)
+  elif p.suffix == ".ogg":
+    return OggVorbis(file)
+
+# Get tag from an audio object
+# Return empty string if non existent
+def get_tag(audio, tag):
+  if tag in audio:
+    return audio[tag][0].strip()
+  else:
+    return ""
+
+# Set a tag from an audio object
+def set_tag(audio, tag, value):
+  audio[tag] = [value]
+
+# Sort by tracknumber once at startup
 def initial_sort():
   global files
-  files = sorted(files, key=lambda x: int(mutagen.File(x)["tracknumber"][0]))
+  files = sorted(files, key=lambda x: int(get_tag(get_audio_object(x), "tracknumber")))
 
 # Get audio files
 def get_files():
   global files
   flacs = glob.glob(f"{sys.argv[1]}/*.flac")
   ogg = glob.glob(f"{sys.argv[1]}/*.ogg")
-  files = flacs + ogg
+  mp3 = glob.glob(f"{sys.argv[1]}/*.mp3")
+  files = flacs + ogg + mp3
   if len(files) == 0:
     print("No files found")
     quit()

@@ -18,7 +18,7 @@ def show_full_menu():
 
 # Show a simple menu without descriptions
 def show_simple_menu(): 
-  print("artist | title | album | genre | move | rename | help | exit")
+  print("artist | album | genre | title | move | rename | help | exit")
 
 # Show the menu and wait for input
 def show_menu(full_menu = False):
@@ -91,33 +91,47 @@ def rename_files():
     p.rename(Path(p.parent, new_name))
 
 # Show tracks to use as reference
-# Show Track, Artist, and Title
+# Show Track, Album, Genre, Title
 # Use sty for coloring
 def show_tracks():
   print("")
   for i, file in enumerate(files):
     audio = mutagen.File(file)
     artist = audio["artist"][0]
+    album = audio["album"][0]
+    genre = audio["genre"][0]
     title = audio["title"][0]
     index = i + 1
     
     print(f"{sty.fg.blue}Track:{sty.fg.rs} {index} | \
 {sty.fg.blue}Artist:{sty.fg.rs} {artist} | \
+{sty.fg.blue}Album:{sty.fg.rs} {album} | \
+{sty.fg.blue}Genre:{sty.fg.rs} {genre} | \
 {sty.fg.blue}Title:{sty.fg.rs} {title}")
 
-# Fill missing data on Track, Artist, and Title
+# Fill missing data on Track, Artist, Album, Genre, and Title
 def check_tracks():
   for file in files:
     audio = mutagen.File(file)
-    title = audio["title"][0]
+    do_update_track = False
+
     if "tracknumber" not in audio:
       audio["tracknumber"] = "1"
-      update_track(audio)
+      do_update_track = True
     if "artist" not in audio or audio["artist"][0].strip() == "":
-      audio["artist"] = "Anon"
-      update_track(audio)      
+      audio["artist"] = "Unknown"
+      do_update_track = True
+    if "album" not in audio or audio["album"][0].strip() == "":
+      audio["album"] = "Unknown"
+      do_update_track = True  
+    if "genre" not in audio or audio["genre"][0].strip() == "":
+      audio["genre"] = "Unknown"
+      do_update_track = True            
     if "title" not in audio or audio["title"][0].strip() == "":
       audio["title"] = Path(file).stem.strip()
+      do_update_track = True
+
+    if update_track:
       update_track(audio)
 
 # Update track numbers based on the indexes of the files list

@@ -13,10 +13,11 @@ def show_full_menu():
   print("move - Move track to a new position")
   print("rename - Apply filename changes")
   print("help - Show this message")
+  print("exit - Exit the application")
 
 # Show a simple menu without descriptions
 def show_simple_menu(): 
-  print("title | artist | album | genre | move | rename | help")
+  print("artist | title | album | genre | move | rename | help | exit")
 
 # Show the menu and wait for input
 def show_menu(full_menu = False):
@@ -42,7 +43,7 @@ def show_menu(full_menu = False):
   elif ans == "help":
     show_menu(True)
   
-  else:
+  elif ans == "exit":
     quit()
 
 # Move track positions by selecting 2 indexes
@@ -65,14 +66,14 @@ def move_track():
 # Generic function to change one or more values
 def change_value(prop):
   w = prop.capitalize()
-  s = input("Target (one, all): ")
-  if s == "one":
-    n = int(input("Track Number: "))
+  ans = input("Target (#, all): ")
+  if ans.isnumeric():
+    n = int(ans)
     if n <= 0 or n > len(files):
       return
     t = input(f"New {w}: ")
     changeone(n - 1, prop, t)
-  elif s == "all":
+  elif ans == "all":
     a = input(f"New {w}: ")
     changeall(prop, a)  
 
@@ -94,12 +95,12 @@ def show_tracks():
   print("")
   for i, file in enumerate(files):
     audio = mutagen.File(file)
-    title = audio["title"][0]
     artist = audio["artist"][0]
+    title = audio["title"][0]
     index = i + 1
     print(f"Track: {index} | Artist: {artist} | Title: {title}")
 
-# Fill missing data on Track, Title, and Artist
+# Fill missing data on Track, Artist, and Title
 def check_tracks():
   for file in files:
     audio = mutagen.File(file)
@@ -107,12 +108,12 @@ def check_tracks():
     if "tracknumber" not in audio:
       audio["tracknumber"] = "1"
       update_track(audio)
-    if "title" not in audio or audio["title"][0].strip() == "":
-      audio["title"] = Path(file).stem.strip()
-      update_track(audio)
     if "artist" not in audio or audio["artist"][0].strip() == "":
       audio["artist"] = "Anon"
       update_track(audio)      
+    if "title" not in audio or audio["title"][0].strip() == "":
+      audio["title"] = Path(file).stem.strip()
+      update_track(audio)
 
 # Update track numbers based on the indexes of the files list
 def update_tracknumbers():

@@ -7,6 +7,8 @@ from mutagen.flac import FLAC
 from mutagen.oggvorbis import OggVorbis
 from mutagen.easyid3 import EasyID3
 
+commands = ["artist", "album", "genre", "title", "move", "rename", "clean", "help", "exit"]
+
 # Show the full menu with descriptions
 def show_full_menu():
   print("artist - Change track artists")
@@ -15,28 +17,40 @@ def show_full_menu():
   print("title - Change track titles")
   print("move - Move track to a new position")
   print("rename - Apply filename changes")
+  print("clean - Clean track titles")
   print("help - Show this message")
   print("exit - Exit the application")
 
+# Simple space
+def spacer():
+  print("")
+
+# Show info messages
+def show_info(header, message):
+  print(f"{sty.fg.green}{header}:{sty.fg.rs} {message}")
+
 # Show a simple menu without descriptions
 def show_simple_menu(): 
-  print("artist | album | genre | title | move | rename | help | exit")
+  print(" | ".join(commands))
 
 # Show the menu and wait for input
 def show_menu(full_menu = False):
-  print("")
+  spacer()
 
   if full_menu:
     show_full_menu()
   else:
     show_simple_menu()
 
-  ans = input("> ")
+  ans = input("> ").strip()
+  if ans == "": return
+  spacer()
+  
   args = list(filter(lambda x: x != "", ans.split(" ")))
   a1 = args[1] if len(args) > 1 else ""
 
   if args[0] == "title" or args[0] == "artist" or args[0] == "album" or args[0] == "genre":
-    change_value(args[0], a1)    
+    change_value(args[0], a1)
 
   elif args[0] == "move":
     move_track()
@@ -44,11 +58,28 @@ def show_menu(full_menu = False):
   elif args[0] == "rename":
     rename_files()
   
+  elif args[0] == "clean":
+    clean_titles()
+  
   elif args[0] == "help":
     show_menu(True)
   
   elif args[0] == "exit":
     quit()
+  
+# Clean titles using some basic rules
+def clean_titles():
+  ans = input("Clean titles? (y/n): ")
+
+  if ans == "y":
+    for file in files:
+      audio = get_audio_object(file)
+      title = get_tag(audio, "title")
+      new_title = title.replace("_", " ").title()
+      if title != new_title:
+        set_tag(audio, "title", new_title)
+        update_track(audio, False)
+        show_info("Cleaned", f"{title} to {new_title}")
 
 # Move track positions by selecting 2 indexes
 def move_track():
@@ -101,7 +132,7 @@ def rename_files():
       old_name = p.name
       if p.name != new_name:
         p.rename(Path(p.parent, new_name))
-        print(f"Renamed: {old_name} to {new_name}")
+        show_info("Renamed", f"{old_name} to {new_name}")
 
     startup()
 
@@ -109,7 +140,8 @@ def rename_files():
 # Show Track, Artist, Album, Genre, Title
 # Use sty for coloring
 def show_tracks():
-  print("")
+  spacer()
+  
   for i, file in enumerate(files):
     audio = get_audio_object(file)
     artist = get_tag(audio, "artist")
@@ -119,7 +151,7 @@ def show_tracks():
     index = i + 1
     
     print(f"\
-{sty.fg.blue}Track:{sty.fg.rs} {index} | \
+{sty.fg.blue}#{sty.fg.rs} {index} | \
 {sty.fg.blue}Artist:{sty.fg.rs} {artist} | \
 {sty.fg.blue}Album:{sty.fg.rs} {album} | \
 {sty.fg.blue}Genre:{sty.fg.rs} {genre} | \
@@ -152,10 +184,11 @@ def update_tracknumbers():
       update_track(audio)
 
 # Save track data and show feedback
-def update_track(audio):
+def update_track(audio, feedback = True):
   title = get_tag(audio, "title")
-  print(f"Updating track: {title}")
   audio.save()
+  if feedback:
+    show_info("Updated", title)
 
 # Change the index of a list item
 def change_index(old_index, new_index):

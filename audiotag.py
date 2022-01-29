@@ -7,19 +7,26 @@ from mutagen.flac import FLAC
 from mutagen.oggvorbis import OggVorbis
 from mutagen.easyid3 import EasyID3
 
-commands = ["artist", "album", "genre", "title", "move", "rename", "clean", "help", "exit"]
+commands = [
+  ["artist", "Change track artists"],
+  ["album", "Change track albums"],
+  ["genre", "Change track genres"],
+  ["title", "Change track titles"],
+  ["move", "Move track to a new position"],
+  ["rename", "Apply filename changes"],
+  ["clean", "Clean track titles"],
+  ["help", "Show this message"],
+  ["exit", "Exit the application"]
+]
+
+# Get commands list
+def command_list():
+  return [cmd[0] for cmd in commands]
 
 # Show the full menu with descriptions
 def show_full_menu():
-  print("artist - Change track artists")
-  print("album - Change track albums")
-  print("genre - Change track genres")
-  print("title - Change track titles")
-  print("move - Move track to a new position")
-  print("rename - Apply filename changes")
-  print("clean - Clean track titles")
-  print("help - Show this message")
-  print("exit - Exit the application")
+  for cmd in commands:
+    print(f"{cmd[0]} - {cmd[1]}")
 
 # Simple space
 def spacer():
@@ -31,15 +38,14 @@ def show_info(header, message):
 
 # Show a simple menu without descriptions
 def show_simple_menu(): 
-  print(" | ".join(commands))
+  print(" | ".join(command_list()))
 
 # Show the menu and wait for input
 def show_menu(full_menu = False):
-  spacer()
-
   if full_menu:
     show_full_menu()
   else:
+    spacer()
     show_simple_menu()
 
   ans = input("> ").strip()
@@ -141,7 +147,7 @@ def rename_files():
 # Use sty for coloring
 def show_tracks():
   spacer()
-  
+
   for i, file in enumerate(files):
     audio = get_audio_object(file)
     artist = get_tag(audio, "artist")

@@ -32,20 +32,22 @@ def show_menu(full_menu = False):
     show_simple_menu()
 
   ans = input("> ")
+  args = list(filter(lambda x: x != "", ans.split(" ")))
+  a1 = args[1] if len(args) > 1 else ""
 
-  if ans == "title" or ans == "artist" or ans == "album" or ans == "genre":
-    change_value(ans)      
+  if args[0] == "title" or args[0] == "artist" or args[0] == "album" or args[0] == "genre":
+    change_value(args[0], a1)    
 
-  elif ans == "move":
+  elif args[0] == "move":
     move_track()
   
-  elif ans == "rename":
+  elif args[0] == "rename":
     rename_files()
   
-  elif ans == "help":
+  elif args[0] == "help":
     show_menu(True)
   
-  elif ans == "exit":
+  elif args[0] == "exit":
     quit()
 
 # Move track positions by selecting 2 indexes
@@ -66,15 +68,19 @@ def move_track():
   update_tracknumbers()
 
 # Generic function to change one or more values
-def change_value(prop):
+def change_value(prop, ans):
   w = prop.capitalize()
-  ans = input("Target (#, all): ")
+
+  if ans == "":
+    ans = input("Target (#, all): ")
+
   if ans.isnumeric():
     n = int(ans)
     if n <= 0 or n > len(files):
       return
     t = input(f"New {w}: ")
     changeone(n - 1, prop, t)
+
   elif ans == "all":
     a = input(f"New {w}: ")
     changeall(prop, a)  
@@ -92,7 +98,10 @@ def rename_files():
       title = title.replace(" ", "_")
       tracknum = get_tag(audio, "tracknumber")
       new_name = f"{tracknum}_{title}{p.suffix}"
-      p.rename(Path(p.parent, new_name))
+      old_name = p.name
+      if p.name != new_name:
+        p.rename(Path(p.parent, new_name))
+        print(f"Renamed: {old_name} to {new_name}")
 
     startup()
 
@@ -109,7 +118,8 @@ def show_tracks():
     title = get_tag(audio, "title")
     index = i + 1
     
-    print(f"{sty.fg.blue}Track:{sty.fg.rs} {index} | \
+    print(f"\
+{sty.fg.blue}Track:{sty.fg.rs} {index} | \
 {sty.fg.blue}Artist:{sty.fg.rs} {artist} | \
 {sty.fg.blue}Album:{sty.fg.rs} {album} | \
 {sty.fg.blue}Genre:{sty.fg.rs} {genre} | \

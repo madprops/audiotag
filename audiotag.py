@@ -100,7 +100,10 @@ def show_tracks():
     artist = audio["artist"][0]
     title = audio["title"][0]
     index = i + 1
-    print(f"{sty.fg.blue}Track:{sty.fg.rs} {index} | {sty.fg.blue}Artist:{sty.fg.rs} {artist} | {sty.fg.blue}Title:{sty.fg.rs} {title}")
+    
+    print(f"{sty.fg.blue}Track:{sty.fg.rs} {index} | \
+{sty.fg.blue}Artist:{sty.fg.rs} {artist} | \
+{sty.fg.blue}Title:{sty.fg.rs} {title}")
 
 # Fill missing data on Track, Artist, and Title
 def check_tracks():

@@ -91,7 +91,7 @@ def rename_files():
     p.rename(Path(p.parent, new_name))
 
 # Show tracks to use as reference
-# Show Track, Album, Genre, Title
+# Show Track, Artist, Album, Genre, Title
 # Use sty for coloring
 def show_tracks():
   print("")

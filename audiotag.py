@@ -7,10 +7,10 @@ from pathlib import Path
 
 # Show the full menu with descriptions
 def show_full_menu():
-  print("title - Change track titles")
   print("artist - Change track artists")
   print("album - Change track albums")
   print("genre - Change track genres")
+  print("title - Change track titles")
   print("move - Move track to a new position")
   print("rename - Apply filename changes")
   print("help - Show this message")

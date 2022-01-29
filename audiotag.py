@@ -82,12 +82,12 @@ def change_value(prop):
 # Syntax: {tracknumber}_{the_title}
 def rename_files():
   for file in files:
+    p = Path(file)
     audio = mutagen.File(file)
     title = re.sub(r'[^\w ]', "", audio["title"][0]).lower()
     title = title.replace(" ", "_")
     tracknum = audio["tracknumber"][0]
-    new_name = f"{tracknum}_{title}.flac"
-    p = Path(file)
+    new_name = f"{tracknum}_{title}.{p.suffix}"
     p.rename(Path(p.parent, new_name))
 
 # Show tracks to use as reference
@@ -170,10 +170,19 @@ def initial_sort():
   global files
   files = sorted(files, key=lambda x: int(mutagen.File(x)["tracknumber"][0]))
 
+# Get audio files
+def get_files():
+  global files
+  flacs = glob.glob(f"{sys.argv[1]}/*.flac")
+  ogg = glob.glob(f"{sys.argv[1]}/*.ogg")
+  files = flacs + ogg
+  if len(files) == 0:
+    print("No files found")
+    quit()
+
 # Main function
 def main() -> None:
-  global files
-  files = glob.glob(f"{sys.argv[1]}/*.flac")
+  get_files()
   check_tracks()
   initial_sort()
   update_tracknumbers()

@@ -7,6 +7,7 @@ from mutagen.flac import FLAC
 from mutagen.oggvorbis import OggVorbis
 from mutagen.easyid3 import EasyID3
 
+# Available commands and their description
 commands = [
   ["artist", "Change track artists"],
   ["album", "Change track albums"],
@@ -37,7 +38,7 @@ def show_info(header, message):
   print(f"{sty.fg.green}{header}:{sty.fg.rs} {message}")
 
 # Show a simple menu without descriptions
-def show_simple_menu(): 
+def show_simple_menu():
   print(" | ".join(command_list()))
 
 # Show the menu and wait for input
@@ -51,7 +52,7 @@ def show_menu(full_menu = False):
   ans = input("> ").strip()
   if ans == "": return
   spacer()
-  
+
   args = list(filter(lambda x: x != "", ans.split(" ")))
   a1 = args[1] if len(args) > 1 else ""
 
@@ -60,19 +61,19 @@ def show_menu(full_menu = False):
 
   elif args[0] == "move":
     move_track()
-  
+
   elif args[0] == "rename":
     rename_files()
-  
+
   elif args[0] == "clean":
     clean_titles()
-  
+
   elif args[0] == "help":
     show_menu(True)
-  
+
   elif args[0] == "exit":
     quit()
-  
+
 # Clean titles using some basic rules
 def clean_titles():
   ans = input("Clean titles? (y/n): ")
@@ -94,10 +95,10 @@ def move_track():
 
   if n1 <= 0 or n1 > len(files):
     return
-  
+
   if n2 <= 0:
     n2 = 1
-  
+
   if n2 > len(files):
     n2 = len(files)
 
@@ -120,7 +121,7 @@ def change_value(prop, ans):
 
   elif ans == "all":
     a = input(f"New {w}: ")
-    changeall(prop, a)  
+    changeall(prop, a)
 
 # Rename all file names based on tags
 # Syntax: {tracknumber}_{the_title}
@@ -155,7 +156,7 @@ def show_tracks():
     genre = get_tag(audio, "genre")
     title = get_tag(audio, "title")
     index = i + 1
-    
+
     print(f"\
 {sty.fg.blue}#{sty.fg.rs} {index} | \
 {sty.fg.blue}Artist:{sty.fg.rs} {artist} | \
@@ -255,7 +256,7 @@ def startup():
   get_files()
   check_tracks()
   initial_sort()
-  update_tracknumbers()  
+  update_tracknumbers()
 
 # Main function
 def main() -> None:
@@ -263,7 +264,7 @@ def main() -> None:
 
   while True:
     show_tracks()
-    show_menu()  
+    show_menu()
 
 if __name__ == "__main__":
-  main()  
+  main()

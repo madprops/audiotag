@@ -2,6 +2,7 @@ import sys
 import glob
 import re
 import mutagen
+import sty
 from pathlib import Path
 
 # Show the full menu with descriptions
@@ -91,6 +92,7 @@ def rename_files():
 
 # Show tracks to use as reference
 # Show Track, Artist, and Title
+# Use sty for coloring
 def show_tracks():
   print("")
   for i, file in enumerate(files):
@@ -98,7 +100,7 @@ def show_tracks():
     artist = audio["artist"][0]
     title = audio["title"][0]
     index = i + 1
-    print(f"Track: {index} | Artist: {artist} | Title: {title}")
+    print(f"{sty.fg.blue}Track:{sty.fg.rs} {index} | {sty.fg.blue}Artist:{sty.fg.rs} {artist} | {sty.fg.blue}Title:{sty.fg.rs} {title}")
 
 # Fill missing data on Track, Artist, and Title
 def check_tracks():

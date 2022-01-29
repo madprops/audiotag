@@ -41,7 +41,6 @@ def show_menu(full_menu = False):
   
   elif ans == "rename":
     rename_files()
-    quit()
   
   elif ans == "help":
     show_menu(True)
@@ -83,14 +82,19 @@ def change_value(prop):
 # Rename all file names based on tags
 # Syntax: {tracknumber}_{the_title}
 def rename_files():
-  for file in files:
-    p = Path(file)
-    audio = get_audio_object(file)
-    title = re.sub(r'[^\w ]', "", get_tag(audio, "title")).lower()
-    title = title.replace(" ", "_")
-    tracknum = get_tag(audio, "tracknumber")
-    new_name = f"{tracknum}_{title}{p.suffix}"
-    p.rename(Path(p.parent, new_name))
+  ans = input("Rename files? (y/n): ")
+
+  if ans == "y":
+    for file in files:
+      p = Path(file)
+      audio = get_audio_object(file)
+      title = re.sub(r'[^\w ]', "", get_tag(audio, "title")).lower()
+      title = title.replace(" ", "_")
+      tracknum = get_tag(audio, "tracknumber")
+      new_name = f"{tracknum}_{title}{p.suffix}"
+      p.rename(Path(p.parent, new_name))
+
+    startup()
 
 # Show tracks to use as reference
 # Show Track, Artist, Album, Genre, Title
@@ -197,12 +201,16 @@ def get_files():
     print("No files found")
     quit()
 
-# Main function
-def main() -> None:
+# Get and prepare files
+def startup():
   get_files()
   check_tracks()
   initial_sort()
-  update_tracknumbers()
+  update_tracknumbers()  
+
+# Main function
+def main() -> None:
+  startup()
 
   while True:
     show_tracks()

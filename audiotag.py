@@ -31,11 +31,12 @@ def show_full_menu():
     print(f"{cmd[0]} - {cmd[1]}")
 
 # Simple space
-def spacer():
+def space():
   print("")
 
 # Show info messages
 def show_info(header, message):
+  space()
   print(f"{sty.fg.green}{header}:{sty.fg.rs} {message}")
 
 # Show a simple menu without descriptions
@@ -47,12 +48,13 @@ def show_menu(full_menu = False):
   if full_menu:
     show_full_menu()
   else:
-    spacer()
+    space()
     show_simple_menu()
 
+  space()
   ans = input("> ").strip()
   if ans == "": return
-  spacer()
+  space()
 
   args = list(filter(lambda x: x != "", ans.split(" ")))
   a1 = args[1] if len(args) > 1 else ""
@@ -86,7 +88,6 @@ def clean_titles():
       new_title = title.replace("_", " ").title()
       if title != new_title:
         set_tag(audio, "title", new_title)
-        show_info("Clean", f"{title} to {new_title}")
 
 # Move track positions by selecting 2 indexes
 def move_track(n1):
@@ -160,7 +161,7 @@ def rename_files():
 # Show Track, Artist, Album, Genre, Title
 # Use sty for coloring
 def show_tracks():
-  spacer()
+  space()
 
   for i, file in enumerate(files):
     audio = get_audio_object(file)
@@ -240,7 +241,7 @@ def get_tag(audio, tag):
 def set_tag(audio, tag, value):
   audio[tag] = [value]
   audio.save()
-  show_info("Update", f"{tag} set to {value} in {Path(audio.filename).name}")
+  show_info("Update", f"{sty.fg.blue}{tag}{sty.fg.rs} set to {sty.fg.blue}{value}{sty.fg.rs} in {Path(audio.filename).name}")
 
 # Sort by tracknumber once at startup
 def initial_sort():
@@ -273,7 +274,7 @@ def startup():
 # Main function
 def main() -> None:
   signal.signal(signal.SIGINT, lambda x, y: sys.exit(0))
-  
+
   startup()
 
   while True:

@@ -139,23 +139,35 @@ def change_value(prop, ans):
   w = prop.capitalize()
 
   if len(files) == 1:
-    t = input(f"New {w}: ")
-    changeone(0, prop, t)
+    new_value = input(f"New {w}: ").strip()
+    if new_value == "": return
+    change_one(0, prop, new_value)
     return
 
   if ans == "":
-    ans = input("Target (#, all): ")
+    ans = input("Target (#, all, n1-n2): ")
 
   if ans.isnumeric():
     n = int(ans)
     if n <= 0 or n > len(files):
       return
-    t = input(f"New {w}: ")
-    changeone(n - 1, prop, t)
+    new_value = input(f"New {w}: ").strip()
+    if new_value == "": return
+    change_one(n - 1, prop, new_value)
 
   elif ans == "all":
-    a = input(f"New {w}: ")
-    changeall(prop, a)
+    new_value = input(f"New {w}: ").strip()
+    if new_value == "": return
+    change_range(1, len(files), prop, new_value)
+  
+  elif "-" in ans:
+    nums = list(map(lambda x: int(x.strip()), ans.split("-")))
+    if len(nums) != 2:
+      return
+    if nums[0] >= nums[1]: return
+    new_value = input(f"New {w}: ").strip()
+    if new_value == "": return
+    change_range(nums[0] - 1, nums[1] - 1, prop, new_value)
 
 # Rename all file names based on tags
 # Syntax: {tracknumber}_{the_title}
@@ -251,12 +263,13 @@ def change_index(old_index, new_index):
   files.insert(new_index, files.pop(old_index))
 
 # Change a field on all tracks
-def changeall(field, value):
+def change_range(n1, n2, field, value):
   for i, file in enumerate(files):
-    changeone(i, field, value)
+    if i >= n1 and i <= n2:
+      change_one(i, field, value)
 
 # Change a field on a specific track
-def changeone(index, field, value):
+def change_one(index, field, value):
   file = files[index]
   audio = get_audio_object(file)
   set_tag(audio, field, value)

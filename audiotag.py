@@ -184,6 +184,7 @@ def show_tracks():
     genres.append(get_tag(audio, "genre"))
     titles.append(get_tag(audio, "title"))
 
+  max_track = len(max(tracks, key = len))
   max_artist = len(max(artists, key = len))
   max_album = len(max(albums, key = len))
   max_genre = len(max(genres, key = len))
@@ -191,7 +192,8 @@ def show_tracks():
   for i, file in enumerate(files):
     text = ""
 
-    text += f"{sty.fg.blue}#{sty.fg.rs} {tracks[i]} | "
+    track = tracks[i].ljust(max_track, " ")
+    text += f"{sty.fg.blue}#{sty.fg.rs} {track} | "
 
     artist = artists[i].ljust(max_artist, " ")
     text += f"{sty.fg.blue}Artist:{sty.fg.rs} {artist} | "

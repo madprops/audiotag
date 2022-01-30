@@ -31,8 +31,10 @@ def command_list():
 
 # Show the full menu with descriptions
 def show_full_menu():
+  max_cmd = len(max(command_list(), key = len))
   for cmd in commands:
-    print(f"{cmd[0]} - {cmd[1]}")
+    c = cmd[0].ljust(max_cmd, " ")
+    print(f"{c} - {cmd[1]}")
 
 # Simple space
 def space():

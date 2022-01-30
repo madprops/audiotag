@@ -20,6 +20,7 @@ commands = [
   ["move", "Move track to a new position"],
   ["rename", "Apply filename changes"],
   ["clean", "Clean track titles"],
+  ["reload", "Reload files"],
   ["help", "Show this message"],
   ["exit", "Exit the application"]
 ]
@@ -73,6 +74,10 @@ def show_menu(full_menu = False):
 
   elif args[0] == "clean":
     clean_titles()
+  
+  elif args[0] == "reload":
+    startup()
+    print("Files were reloaded.")
 
   elif args[0] == "help":
     show_menu(True)

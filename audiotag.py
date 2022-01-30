@@ -1,9 +1,12 @@
+# Std imports
 import sys
 import glob
 import re
-import sty
 import signal
 from pathlib import Path
+
+# Pip installs
+import sty
 from mutagen.flac import FLAC
 from mutagen.oggvorbis import OggVorbis
 from mutagen.easyid3 import EasyID3
@@ -95,7 +98,7 @@ def move_track(n1):
     n2 = input("New Track Number: ")
     set_tag(get_audio_object(files[0]), "tracknumber", n2)
     return
-  
+
   if n1 == "":
     n1 = input("Track Number: ")
   n1 = int(n1)
@@ -123,7 +126,7 @@ def change_value(prop, ans):
     changeone(0, prop, t)
     return
 
-  if ans == "": 
+  if ans == "":
     ans = input("Target (#, all): ")
 
   if ans.isnumeric():
@@ -162,21 +165,41 @@ def rename_files():
 # Use sty for coloring
 def show_tracks():
   space()
+  tracks = []
+  artists = []
+  albums = []
+  genres = []
+  titles = []
 
   for i, file in enumerate(files):
     audio = get_audio_object(file)
-    track = get_tag(audio, "tracknumber")
-    artist = get_tag(audio, "artist")
-    album = get_tag(audio, "album")
-    genre = get_tag(audio, "genre")
-    title = get_tag(audio, "title")
+    tracks.append(get_tag(audio, "tracknumber"))
+    artists.append(get_tag(audio, "artist"))
+    albums.append(get_tag(audio, "album"))
+    genres.append(get_tag(audio, "genre"))
+    titles.append(get_tag(audio, "title"))
 
-    print(f"\
-{sty.fg.blue}#{sty.fg.rs} {track} | \
-{sty.fg.blue}Artist:{sty.fg.rs} {artist} | \
-{sty.fg.blue}Album:{sty.fg.rs} {album} | \
-{sty.fg.blue}Genre:{sty.fg.rs} {genre} | \
-{sty.fg.blue}Title:{sty.fg.rs} {title}")
+  max_artist = len(max(artists, key = len))
+  max_album = len(max(albums, key = len))
+  max_genre = len(max(genres, key = len))
+
+  for i, file in enumerate(files):
+    text = ""
+
+    text += f"{sty.fg.blue}#{sty.fg.rs} {tracks[i]} | "
+
+    artist = artists[i].ljust(max_artist, " ")
+    text += f"{sty.fg.blue}Artist:{sty.fg.rs} {artist} | "
+
+    album = albums[i].ljust(max_album, " ")
+    text += f"{sty.fg.blue}Album:{sty.fg.rs} {album} | "
+
+    genre = genres[i].ljust(max_genre, " ")
+    text += f"{sty.fg.blue}Genre:{sty.fg.rs} {genre} | "
+
+    text += f"{sty.fg.blue}Title:{sty.fg.rs} {titles[i]}"
+
+    print(text)
 
 # Fill missing data on Track, Artist, Album, Genre, and Title
 def check_tracks():
@@ -251,6 +274,7 @@ def initial_sort():
 # Get audio files
 def get_files():
   global files
+  files = []
   filespath = sys.argv[1]
   p = Path(filespath)
   if p.is_dir():

@@ -45,6 +45,10 @@ def show_info(header, message):
   space()
   print(f"{sty.fg.green}{header}:{sty.fg.rs} {message}")
 
+def action(message):
+  space()
+  print(f"{sty.fg.green}{message}{sty.fg.rs}")
+
 # Show a simple menu without descriptions
 def show_simple_menu():
   print(" | ".join(command_list()))
@@ -78,8 +82,7 @@ def show_menu(full_menu = False):
     clean_titles()
   
   elif args[0] == "reload":
-    startup()
-    print("Files were reloaded.")
+    reload_files()
 
   elif args[0] == "help":
     show_menu(True)
@@ -98,6 +101,13 @@ def clean_titles():
       new_title = title.replace("_", " ").title()
       if title != new_title:
         set_tag(audio, "title", new_title)
+
+# Reload files
+def reload_files():
+  ans = input("Reload files? (y/n): ")
+  if ans == "y":
+    startup()
+    action("Files were reloaded.")  
 
 # Move track positions by selecting 2 indexes
 def move_track(n1):

@@ -67,13 +67,13 @@ def show_menu(full_menu = False):
   space()
 
   args = list(filter(lambda x: x != "", ans.split(" ")))
-  a1 = args[1] if len(args) > 1 else ""
+  tail = " ".join(args[1:]) if len(args) > 1 else ""
 
   if args[0] == "title" or args[0] == "artist" or args[0] == "album" or args[0] == "genre":
-    change_value(args[0], a1)
+    change_value(args[0], tail)
 
   elif args[0] == "move":
-    move_track(a1)
+    move_track(tail)
 
   elif args[0] == "rename":
     rename_files()
@@ -145,7 +145,7 @@ def change_value(prop, ans):
     return
 
   if ans == "":
-    ans = input("Target (#, all, n1-n2): ")
+    ans = input("Target ( # | all | n1-n2 | n1,n2 ): ")
 
   if ans.isnumeric():
     n = int(ans)
@@ -158,16 +158,36 @@ def change_value(prop, ans):
   elif ans == "all":
     new_value = input(f"New {w}: ").strip()
     if new_value == "": return
-    change_range(1, len(files), prop, new_value)
+    change_set(1, len(files), prop, new_value)
   
-  elif "-" in ans:
+  elif "-" in ans and "," not in ans:
     nums = list(map(lambda x: int(x.strip()), ans.split("-")))
+    
     if len(nums) != 2:
       return
+
     if nums[0] >= nums[1]: return
+    if nums[0] <= 0: return
+    if nums[1] > len(files): return
+    nums = range(nums[0], nums[1] + 1)
+
     new_value = input(f"New {w}: ").strip()
     if new_value == "": return
-    change_range(nums[0] - 1, nums[1] - 1, prop, new_value)
+    change_set(nums, prop, new_value)
+
+  elif "," in ans:
+    nums = list(map(lambda x: int(x.strip()), ans.split(",")))
+    
+    if len(nums) == 0 or len(nums) > len(files):
+      return
+    
+    for num in nums:
+      if num <= 0 or num > len(files):
+        return
+
+    new_value = input(f"New {w}: ").strip()
+    if new_value == "": return
+    change_set(nums, prop, new_value)   
 
 # Rename all file names based on tags
 # Syntax: {tracknumber}_{the_title}
@@ -263,10 +283,9 @@ def change_index(old_index, new_index):
   files.insert(new_index, files.pop(old_index))
 
 # Change a field on all tracks
-def change_range(n1, n2, field, value):
-  for i, file in enumerate(files):
-    if i >= n1 and i <= n2:
-      change_one(i, field, value)
+def change_set(nums, field, value):
+  for num in nums:
+    change_one(num - 1, field, value)
 
 # Change a field on a specific track
 def change_one(index, field, value):

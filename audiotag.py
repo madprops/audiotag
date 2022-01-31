@@ -119,8 +119,11 @@ def clean_titles(ans):
       set_tag(audio, "title", new_title)
 
 # Reload files
-def reload_files():
-  ans = prompt("Reload files? (y/n): ")
+def reload_files(force = False):
+  if not force:
+    ans = prompt("Reload files? (y/n): ")
+  else:
+    ans = "y"
   if ans == "y":
     startup()
     show_action("Files were reloaded.")  
@@ -220,13 +223,15 @@ def rename_files(ans):
     new_name = f"{tracknum}_{title}{p.suffix}"
     old_name = p.name
     if p.name != new_name:
-      p.rename(Path(p.parent, new_name))
+      new_path = Path(p.parent, new_name)
+      p.rename(new_path)
+      if filesmode == "file":
+        filespath = new_path
       show_info("Rename", f"{old_name} {sty.fg.blue}to{sty.fg.rs} {new_name}")
       renamed = True
   
   if renamed:
-    show_action("Exiting now.")
-    do_quit()    
+    reload_files(True)
 
 # Show tracks to use as reference
 # Show Track, Artist, Album, Title
@@ -342,15 +347,17 @@ def initial_sort():
 # Get audio files
 def get_files():
   global files
+  global filesmode
   files = []
-  filespath = sys.argv[1]
   p = Path(filespath)
   if p.is_dir():
+    filesmode = "dir"
     flacs = glob.glob(f"{filespath}/*.flac")
     ogg = glob.glob(f"{filespath}/*.ogg")
     mp3 = glob.glob(f"{filespath}/*.mp3")
     files = flacs + ogg + mp3
   elif p.is_file():
+    filesmode = "file"
     files = [str(p)]
   if len(files) == 0:
     show_error("No files found.")
@@ -365,6 +372,8 @@ def startup():
 
 # Main function
 def main() -> None:
+  global filespath
+  filespath = sys.argv[1]
   signal.signal(signal.SIGINT, lambda x, y: sys.exit(0))
 
   startup()

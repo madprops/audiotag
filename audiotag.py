@@ -89,7 +89,7 @@ def show_menu(full_menu = False):
     rename_files(tail)
 
   elif args[0] == "clean":
-    clean_titles()
+    clean_titles(tail)
   
   elif args[0] == "reload":
     reload_files()
@@ -101,16 +101,17 @@ def show_menu(full_menu = False):
     quit()
 
 # Clean titles using some basic rules
-def clean_titles():
-  ans = input("Clean titles? (y/n): ")
+def clean_titles(ans):
+  targets = get_targets(ans)
 
-  if ans == "y":
-    for file in files:
-      audio = get_audio_object(file)
-      title = get_tag(audio, "title")
-      new_title = title.replace("_", " ").title()
-      if title != new_title:
-        set_tag(audio, "title", new_title)
+  for num in targets:
+    file = files[num - 1]
+    p = Path(file)
+    audio = get_audio_object(file)
+    title = get_tag(audio, "title")
+    new_title = title.replace("_", " ").title()
+    if title != new_title:
+      set_tag(audio, "title", new_title)
 
 # Reload files
 def reload_files():
@@ -214,12 +215,12 @@ def rename_files(ans):
     old_name = p.name
     if p.name != new_name:
       p.rename(Path(p.parent, new_name))
-      show_info("Rename", f"{old_name} to {new_name}")
-    show_action("Exiting now.")
-    do_quit()
+      show_info("Rename", f"{old_name} {sty.fg.blue}to{sty.fg.rs} {new_name}")
+      show_action("Exiting now.")
+      do_quit()
 
 # Show tracks to use as reference
-# Show Track, Title, Artist, Album
+# Show Track, Artist, Album, Title
 # Use sty for coloring
 def show_tracks():
   space()
@@ -231,9 +232,9 @@ def show_tracks():
   for i, file in enumerate(files):
     audio = get_audio_object(file)
     tracks.append(get_tag(audio, "tracknumber"))
-    titles.append(get_tag(audio, "title"))
     artists.append(get_tag(audio, "artist"))
     albums.append(get_tag(audio, "album"))
+    titles.append(get_tag(audio, "title"))
 
   max_track = len(max(tracks, key = len))
   max_artist = len(max(artists, key = len))
@@ -255,13 +256,13 @@ def show_tracks():
 
     print(text)
 
-# Fill missing data on Track, Title, Artist, Album
+# Fill missing data on Track, Artist, Album, Title
 def check_tracks():
   for file in files:
     set_tag_if_empty(file, "tracknumber", "1")
-    set_tag_if_empty(file, "title", Path(file).stem)
     set_tag_if_empty(file, "artist", "Unknown")
     set_tag_if_empty(file, "album", "Unknown")
+    set_tag_if_empty(file, "title", Path(file).stem)
 
 # If value is empty fill it with a value
 def set_tag_if_empty(file, field, value):

@@ -41,13 +41,13 @@ def space():
 
 # Normal print
 def echo(s, spaced = True):
-  if spaced:
+  if spaced: 
     space()
   print(s)
 
 # Get input from the user
 def prompt(s):
-  print("")
+  space()
   return input(s).strip()
 
 # Show info messages
@@ -243,6 +243,7 @@ def show_tracks():
   artists = []
   albums = []
   titles = []
+  names = []
 
   for i, file in enumerate(files):
     audio = get_audio_object(file)
@@ -250,10 +251,12 @@ def show_tracks():
     artists.append(get_tag(audio, "artist"))
     albums.append(get_tag(audio, "album"))
     titles.append(get_tag(audio, "title"))
+    names.append(Path(file).name)
 
   max_track = len(max(tracks, key = len))
   max_artist = len(max(artists, key = len))
   max_album = len(max(albums, key = len))
+  max_title = len(max(titles, key = len))
 
   for i, file in enumerate(files):
     text = ""
@@ -267,7 +270,10 @@ def show_tracks():
     album = albums[i].ljust(max_album, " ")
     text += f"{sty.fg.blue}Album:{sty.fg.rs} {album} | "
 
-    text += f"{sty.fg.blue}Title:{sty.fg.rs} {titles[i]}"
+    title = titles[i].ljust(max_title, " ")
+    text += f"{sty.fg.blue}Title:{sty.fg.rs} {title} | "
+    
+    text += f"{sty.fg.blue}File:{sty.fg.rs} {names[i]}"
 
     echo(text, False)
 

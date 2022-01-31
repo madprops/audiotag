@@ -33,26 +33,34 @@ def show_full_menu():
   max_cmd = len(max(command_list(), key = len))
   for cmd in commands:
     c = cmd[0].ljust(max_cmd, " ")
-    print(f"{c} - {cmd[1]}")
+    echo(f"{c} - {cmd[1]}")
 
 # Simple space
 def space():
   print("")
 
+# Normal print
+def echo(s, spaced = True):
+  if spaced:
+    space()
+  print(s)
+
+# Get input from the user
+def prompt(s):
+  print("")
+  return input(s).strip()
+
 # Show info messages
 def show_info(header, message):
-  space()
-  print(f"{sty.fg.green}{header}:{sty.fg.rs} {message}")
+  echo(f"{sty.fg.green}{header}:{sty.fg.rs} {message}")
 
 # Show action
 def show_action(message):
-  space()
-  print(f"{sty.fg.green}{message}{sty.fg.rs}")
+  echo(f"{sty.fg.green}{message}{sty.fg.rs}")
 
 # Show error
 def show_error(message):
-  space()
-  print(f"{sty.fg.red}{message}{sty.fg.rs}")
+  echo(f"{sty.fg.red}{message}{sty.fg.rs}")
 
 # Quit program
 def do_quit():
@@ -61,20 +69,17 @@ def do_quit():
 
 # Show a simple menu without descriptions
 def show_simple_menu():
-  print(" | ".join(command_list()))
+  echo(" | ".join(command_list()))
 
 # Show the menu and wait for input
 def show_menu(full_menu = False):
   if full_menu:
     show_full_menu()
   else:
-    space()
     show_simple_menu()
 
-  space()
-  ans = input("> ").strip()
+  ans = prompt("> ")
   if ans == "": return
-  space()
 
   args = list(filter(lambda x: x != "", ans.split(" ")))
   tail = " ".join(args[1:]) if len(args) > 1 else ""
@@ -115,7 +120,7 @@ def clean_titles(ans):
 
 # Reload files
 def reload_files():
-  ans = input("Reload files? (y/n): ")
+  ans = prompt("Reload files? (y/n): ")
   if ans == "y":
     startup()
     show_action("Files were reloaded.")  
@@ -123,15 +128,15 @@ def reload_files():
 # Move track positions by selecting 2 indexes
 def move_track(n1):
   if len(files) == 1:
-    n2 = input("New Track Number: ")
+    n2 = prompt("New Track Number: ")
     set_tag(get_audio_object(files[0]), "tracknumber", n2)
     return
 
   if n1 == "":
-    n1 = input("Track Number: ")
+    n1 = prompt("Track Number: ")
   n1 = int(n1)
 
-  n2 = int(input("New Track Number: "))
+  n2 = int(prompt("New Track Number: "))
 
   if n1 <= 0 or n1 > len(files):
     return
@@ -151,7 +156,7 @@ def get_targets(ans):
     return [1]
 
   if ans == "":
-    ans = input("Target ( # | all | n1-n2 | n1,n2 ): ")
+    ans = prompt("Target ( # | all | n1-n2 | n1,n2 ): ")
 
   if ans.isnumeric():
     n = int(ans)
@@ -196,13 +201,14 @@ def change_value(prop, ans):
   
   if len(targets) > 0:
     w = prop.capitalize()
-    new_value = input(f"New {w}: ").strip()
+    new_value = prompt(f"New {w}: ").strip()
     change_set(targets, prop, new_value)
 
 # Rename file names based on tags
 # Syntax: {tracknumber}_{the_title}
 def rename_files(ans):
   targets = get_targets(ans)
+  renamed = False
 
   for num in targets:
     file = files[num - 1]
@@ -216,14 +222,18 @@ def rename_files(ans):
     if p.name != new_name:
       p.rename(Path(p.parent, new_name))
       show_info("Rename", f"{old_name} {sty.fg.blue}to{sty.fg.rs} {new_name}")
-      show_action("Exiting now.")
-      do_quit()
+      renamed = True
+  
+  if renamed:
+    show_action("Exiting now.")
+    do_quit()    
 
 # Show tracks to use as reference
 # Show Track, Artist, Album, Title
 # Use sty for coloring
 def show_tracks():
   space()
+
   tracks = []
   artists = []
   albums = []
@@ -254,7 +264,7 @@ def show_tracks():
 
     text += f"{sty.fg.blue}Title:{sty.fg.rs} {titles[i]}"
 
-    print(text)
+    echo(text, False)
 
 # Fill missing data on Track, Artist, Album, Title
 def check_tracks():

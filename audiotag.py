@@ -41,7 +41,7 @@ def space():
 
 # Normal print
 def echo(s, spaced = True):
-  if spaced: 
+  if spaced:
     space()
   print(s)
 
@@ -82,20 +82,21 @@ def show_menu(full_menu = False):
   if ans == "": return
 
   args = list(filter(lambda x: x != "", ans.split(" ")))
-  tail = " ".join(args[1:]) if len(args) > 1 else ""
+  arg1 = args[1] if len(args) > 1 else ""
+  arg2 = " ".join(args[2:]) if len(args) > 2 else ""
 
   if args[0] == "title" or args[0] == "artist" or args[0] == "album":
-    change_value(args[0], tail)
+    change_value(args[0], arg1, arg2)
 
   elif args[0] == "move":
-    move_track(tail)
+    move_track(arg1, arg2)
 
   elif args[0] == "rename":
-    rename_files(tail)
+    rename_files(arg1)
 
   elif args[0] == "clean":
-    clean_titles(tail)
-  
+    clean_titles(arg1)
+
   elif args[0] == "reload":
     reload_files()
 
@@ -106,8 +107,8 @@ def show_menu(full_menu = False):
     quit()
 
 # Clean titles using some basic rules
-def clean_titles(ans):
-  targets = get_targets(ans)
+def clean_titles(arg1):
+  targets = get_targets(arg1)
 
   for num in targets:
     file = files[num - 1]
@@ -126,36 +127,41 @@ def reload_files(force = False):
     ans = "y"
   if ans == "y":
     startup()
-    show_action("Files were reloaded.")  
+    show_action("Files were reloaded.")
 
 # Move track positions by selecting 2 indexes
-def move_track(n1):
-  if len(files) == 1:
-    n2 = prompt("New Track Number: ")
-    set_tag(get_audio_object(files[0]), "tracknumber", n2)
+def move_track(arg1, arg2):
+  if filesmode == "file":
+    audio = get_audio_object(files[0])
+    arg1 = get_tag(audio, "tracknumber")
+
+  if arg1 == "":
+    arg1 = prompt("Track Number: ")
+  arg1 = int(arg1)
+
+  if arg2 == "":
+    arg2 = prompt("New Track Number: ")
+  arg2 = int(arg2)
+
+  if filesmode == "file":
+    set_tag(audio, "tracknumber", arg2)
     return
 
-  if n1 == "":
-    n1 = prompt("Track Number: ")
-  n1 = int(n1)
-
-  n2 = int(prompt("New Track Number: "))
-
-  if n1 <= 0 or n1 > len(files):
+  if arg1 <= 0 or arg1 > len(files):
     return
 
-  if n2 <= 0:
-    n2 = 1
+  if arg2 <= 0:
+    arg2 = 1
 
-  if n2 > len(files):
-    n2 = len(files)
+  if arg2 > len(files):
+    arg2 = len(files)
 
-  change_index(n1 - 1, n2 - 1)
+  change_index(arg1 - 1, arg2 - 1)
   update_tracknumbers()
 
 # Get track targets
 def get_targets(ans):
-  if len(files) == 1:
+  if filesmode == "file":
     return [1]
 
   if ans == "":
@@ -169,10 +175,10 @@ def get_targets(ans):
 
   elif ans == "all":
     targets = range(1, len(files) + 1)
-  
+
   elif "-" in ans and "," not in ans:
     nums = list(map(lambda x: int(x.strip()), ans.split("-")))
-    
+
     if len(nums) != 2:
       return []
 
@@ -183,34 +189,34 @@ def get_targets(ans):
 
   elif "," in ans:
     nums = list(map(lambda x: int(x.strip()), ans.split(",")))
-    
+
     if len(nums) == 0 or len(nums) > len(files):
       return []
-    
+
     for num in nums:
       if num <= 0 or num > len(files):
         return []
 
     targets = nums
-  
+
   else:
     targets = []
 
   return targets
 
 # Generic function to change one or more values
-def change_value(prop, ans):
-  targets = get_targets(ans)
-  
+def change_value(prop, arg1, arg2):
+  targets = get_targets(arg1)
   if len(targets) > 0:
     w = prop.capitalize()
-    new_value = prompt(f"New {w}: ").strip()
-    change_set(targets, prop, new_value)
+    if arg2 == "":
+      arg2 = prompt(f"New {w}: ")
+    change_set(targets, prop, arg2)
 
 # Rename file names based on tags
 # Syntax: {tracknumber}_{the_title}
-def rename_files(ans):
-  targets = get_targets(ans)
+def rename_files(arg1):
+  targets = get_targets(arg1)
   renamed = False
 
   for num in targets:
@@ -229,7 +235,7 @@ def rename_files(ans):
         filespath = new_path
       show_info("Rename", f"{old_name} {sty.fg.blue}to{sty.fg.rs} {new_name}")
       renamed = True
-  
+
   if renamed:
     reload_files(True)
 
@@ -272,7 +278,7 @@ def show_tracks():
 
     title = titles[i].ljust(max_title, " ")
     text += f"{sty.fg.blue}Title:{sty.fg.rs} {title} | "
-    
+
     text += f"{sty.fg.blue}File:{sty.fg.rs} {names[i]}"
 
     echo(text, False)
@@ -293,7 +299,7 @@ def set_tag_if_empty(file, field, value):
 
 # Update track numbers based on the indexes of the files list
 def update_tracknumbers():
-  if len(files) == 1: return
+  if filesmode == "file": return
 
   for i, file in enumerate(files):
     audio = get_audio_object(file)
@@ -348,6 +354,7 @@ def clean_tracknumber(s):
 # Sort by tracknumber once at startup
 def initial_sort():
   global files
+  files.sort()
   files = sorted(files, key=lambda x: clean_tracknumber(get_tag(get_audio_object(x), "tracknumber")))
 
 # Get audio files
